@@ -28,14 +28,6 @@ void lsm6dsl_readArray(uint8_t * data, uint8_t reg, uint8_t length)
 }
 
 
-int8_t lsm6dsl_get_temp()
-{
-	uint8_t temp[2];
-	lsm6dsl_readArray(temp, LSM6DSL_ADDRESS_TEMP_L, 2);
-
-	return (((int16_t)((temp[1] << 8) | temp[0])) >> 3)  + 25;
-}
-
 
 void lsm6dsl_get_acc(float* x, float* y, float* z)
 {
@@ -87,7 +79,7 @@ uint8_t lsm6dsl_init(void)
 
 	LL_mDelay(100);
 
-	uint8_t val = lsm6dsl_read_byte(LSM6DSL_WHO_AM_I_ADDRES);
+	uint8_t val = lsm6dsl_read_byte(LSM6DSL_WHO_AM_I_ADDRESS);
 
 	if(val == LSM6DSL_WHO_AM_I_VALUE)
 	{
@@ -96,7 +88,7 @@ uint8_t lsm6dsl_init(void)
 	else			//if the device is not found on one address, try another one
 	{
 		addres = LSM6DSL_DEVICE_ADDRESS_1;
-		val = lsm6dsl_read_byte(LSM6DSL_WHO_AM_I_ADDRES);
+		val = lsm6dsl_read_byte(LSM6DSL_WHO_AM_I_ADDRESS);
 		if(val == LSM6DSL_WHO_AM_I_VALUE)
 		{
 			status = 1;
