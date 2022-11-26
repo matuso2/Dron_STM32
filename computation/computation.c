@@ -77,8 +77,7 @@ int compute_filtered_roll(float acc[3])
 		sum_roll += last10_rolls[i-1] * i;
 	}
 
-
-	return sum_roll/55;
+	return (int)(sum_roll/55);
 }
 
 /*function to compute filtered ROLL angle*/
@@ -98,7 +97,19 @@ int compute_filtered_pitch(float acc[3])
 		sum_pitch += last10_pitchs[i-1] * i;
 	}
 
-	return sum_pitch/55;
+	return (int)(sum_pitch/55);
+}
+
+int compute_roll_speed(float acc[3], int max_roll_speed)
+{
+
+	return (int)((max_roll_speed/(float)(max_tilt_angle))*compute_filtered_roll(acc));
+}
+
+int compute_pitch_speed(float acc[3], int max_pitch_speed)
+{
+
+	return (int)((max_pitch_speed/(float)(max_tilt_angle))*compute_filtered_pitch(acc));
 }
 
 

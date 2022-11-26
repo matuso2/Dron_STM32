@@ -36,8 +36,12 @@
 
 uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
-int roll, pitch;
+int roll_speed, pitch_speed;
 char formated_text[30];
+
+/*config, after testing both set to 100*/
+int max_roll_speed = 50;
+int max_pitch_speed = 50;
 
 void SystemClock_Config(void);
 
@@ -63,12 +67,10 @@ int main(void)
 	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
 	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
-	  /*docasie volanie v maine ako vracane ciste uhly
-	  * - v neskorsej iteracii sa funkcie budu volat sucasne, vystupom bude normovany vystup rychlosti f/b (forward/backward) pre API */
-	  roll = compute_filtered_roll(acc);
-	  pitch = compute_filtered_pitch(acc);
+	  roll_speed = compute_roll_speed(acc, max_roll_speed);
+	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed);
 	  memset(formated_text, '\0', sizeof(formated_text));
-	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll, pitch);
+	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll_speed, pitch_speed);
 
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
 	  LL_mDelay(10);
