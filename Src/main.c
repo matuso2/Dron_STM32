@@ -29,11 +29,14 @@
 #include "dma.h"
 
 #include "lsm6dsl.h"
+#include "computation.h"
+#include "math.h"
 
 #define CHAR_BUFF_SIZE	30
 
 uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
+int roll, pitch;
 char formated_text[30];
 
 void SystemClock_Config(void);
@@ -57,18 +60,20 @@ int main(void)
 
   while (1)
   {
-	  //os			   x      y        z
-	 	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
-	 	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
-	 	  memset(formated_text, '\0', sizeof(formated_text));
-	 	  sprintf(formated_text, "%0.4f, %0.4f, %0.4f, %0.4f, %0.4f, %0.4f\r", acc[0], acc[1], acc[2], gyro[0], gyro[1], gyro[2]);
-	 //	  sprintf(formated_text, "%0.4f,%0.4f,%0.4f\r", gyro[0], gyro[1], gyro[2]);
-	 //	  sprintf(formated_text, "%0.4f,%0.4f,%0.4f\r", acc[0], acc[1], acc[2]);
-	 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
-	 	  LL_mDelay(10);
+	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
+	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+
+	  /*docasie volanie v maine ako vracane ciste uhly
+	  * - v neskorsej iteracii sa funkcie budu volat sucasne, vystupom bude normovany vystup rychlosti f/b (forward/backward) pre API */
+	  roll = computation_roll(acc);
+	  pitch = computation_pitch(acc);
+	  memset(formated_text, '\0', sizeof(formated_text));
+	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll, pitch);
+
+	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
+	  LL_mDelay(10);
   }
 }
-
 
 /**
   * @brief System Clock Configuration
