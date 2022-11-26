@@ -1,5 +1,5 @@
 /*
- * computation.c
+ * computation_roll_pitch.c
  *
  *  Created on: Nov 26, 2022
  *      Author: jakub
@@ -8,8 +8,9 @@
 
 int last10_rolls[10];
 int last10_pitchs[10];
-int max_tilt_angle = 30; //in deg
+int max_tilt_angle = 30; //in deg for roll & pitch
 
+/*function to check if angle is not bigger than allowed*/
 int compute_limited_angle(int theta_temp)
 {
 	if (theta_temp > max_tilt_angle)
@@ -24,6 +25,7 @@ int compute_limited_angle(int theta_temp)
 		return theta_temp;
 	}
 }
+
 /*ROLL angle - angle around X axis*/
 int compute_roll(float acc[3])
 {
@@ -100,16 +102,41 @@ int compute_filtered_pitch(float acc[3])
 	return (int)(sum_pitch/55);
 }
 
-int compute_roll_speed(float acc[3], int max_roll_speed)
+/*function to compute speed in general*/
+int compute_speed(int angle, int max_speed, int control_type)
 {
-
-	return (int)((max_roll_speed/(float)(max_tilt_angle))*compute_filtered_roll(acc));
+	/*quadratic control*/
+	if( control_type == 2)
+	{
+		if (angle >=0)
+		{
+			return (int)((max_speed/(float)(pow(max_tilt_angle,2)))*pow(angle,2));
+		}
+		else
+		{
+			return (int)(-1*(max_speed/(float)(pow(max_tilt_angle,2)))*pow(angle,2));
+		}
+	}
+	/*linear control - serves as default*/
+	else
+	{
+		return (int)((max_speed/(float)(max_tilt_angle))*angle);
+	}
 }
 
-int compute_pitch_speed(float acc[3], int max_pitch_speed)
+/*function to compute ROLL speed*/
+int compute_roll_speed(float acc[3], int max_roll_speed, int control_type)
 {
+	int roll_temp = compute_filtered_roll(acc);
+	return compute_speed(roll_temp, max_roll_speed, control_type);
 
-	return (int)((max_pitch_speed/(float)(max_tilt_angle))*compute_filtered_pitch(acc));
+}
+
+/*function to compute PITCH speed*/
+int compute_pitch_speed(float acc[3], int max_pitch_speed, int control_type)
+{
+	int pitch_temp = compute_filtered_pitch(acc);
+	return compute_speed(pitch_temp, max_pitch_speed, control_type);
 }
 
 

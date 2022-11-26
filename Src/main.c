@@ -39,9 +39,10 @@ float mag[3], acc[3], gyro[3];
 int roll_speed, pitch_speed;
 char formated_text[30];
 
-/*config, after testing both set to 100*/
+/*config, after testing set both speeds to 100*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
+int control_type = 2; //1 linear, 2 quadratic
 
 void SystemClock_Config(void);
 
@@ -67,8 +68,9 @@ int main(void)
 	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
 	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
-	  roll_speed = compute_roll_speed(acc, max_roll_speed);
-	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed);
+	  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+
 	  memset(formated_text, '\0', sizeof(formated_text));
 	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll_speed, pitch_speed);
 
