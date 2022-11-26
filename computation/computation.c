@@ -8,19 +8,39 @@
 
 int last10_rolls[10];
 int last10_pitchs[10];
+int max_tilt_angle = 30; //in deg
 
+int compute_limited_angle(int theta_temp)
+{
+	if (theta_temp > max_tilt_angle)
+	{
+		return max_tilt_angle;
+	}
+	else if (theta_temp < -max_tilt_angle)
+	{
+		return -max_tilt_angle;
+	}
+	else{
+		return theta_temp;
+	}
+}
 /*ROLL angle - angle around X axis*/
 int compute_roll(float acc[3])
 {
 	double theta = atan( (double)(acc[1]/(sqrt(pow(acc[0],2) + pow(acc[2],2)))) );
-	return rad_to_deg(theta);
+	int theta_temp = rad_to_deg(theta);
+
+	return compute_limited_angle(theta_temp);
+
 }
 
 /*PITCH angle - angle around Y axis*/
 int compute_pitch(float acc[3])
 {
 	double theta = atan( (double)(acc[0]/(sqrt(pow(acc[1],2) + pow(acc[2],2)))) );
-	return rad_to_deg(theta);
+	int theta_temp = rad_to_deg(theta);
+
+	return compute_limited_angle(theta_temp);
 }
 
 /*function to convert RAD to DEG*/
@@ -54,8 +74,9 @@ int compute_filtered_roll(float acc[3])
 	int sum_roll = 0;
 	for (int i=1;i<11;i++)
 	{
-		sum_roll += last10_rolls[i] * i;
+		sum_roll += last10_rolls[i-1] * i;
 	}
+
 
 	return sum_roll/55;
 }
@@ -74,7 +95,7 @@ int compute_filtered_pitch(float acc[3])
 	int sum_pitch = 0;
 	for (int i=1;i<11;i++)
 	{
-		sum_pitch += last10_pitchs[i] * i;
+		sum_pitch += last10_pitchs[i-1] * i;
 	}
 
 	return sum_pitch/55;
