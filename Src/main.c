@@ -65,8 +65,8 @@ int main(void)
 
 	  /*docasie volanie v maine ako vracane ciste uhly
 	  * - v neskorsej iteracii sa funkcie budu volat sucasne, vystupom bude normovany vystup rychlosti f/b (forward/backward) pre API */
-	  roll = computation_roll(acc);
-	  pitch = computation_pitch(acc);
+	  roll = compute_filtered_roll(acc);
+	  pitch = compute_filtered_pitch(acc);
 	  memset(formated_text, '\0', sizeof(formated_text));
 	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll, pitch);
 

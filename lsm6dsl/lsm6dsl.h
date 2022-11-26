@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "i2c.h"
+#include "computation.h"
 
 
 #define 	LSM6DSL_DEVICE_ADDRESS_0				0xD5 	//adresa read 1 SLAVE
