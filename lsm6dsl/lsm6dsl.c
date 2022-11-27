@@ -53,6 +53,13 @@ void lsm6dsl_get_acc(float* x, float* y, float* z)
 	*z = (zz >> 4) / 1000.0f;
 }
 
+//float* get_gyro()
+//{
+//
+//
+//	return abcd;
+//}
+
 void lsm6dsl_get_gyro(float* roll, float* pitch, float* yaw)
 {
 	uint8_t data[6];
@@ -67,6 +74,22 @@ void lsm6dsl_get_gyro(float* roll, float* pitch, float* yaw)
 	*roll = (xx >> 4) / 1000.0f;
 	*pitch = (yy >> 4) / 1000.0f;
 	*yaw = (zz >> 4) / 1000.0f;
+}
+
+void fulfill_last10_rolls_pichs()
+{
+	int last10_rolls_temp[10];
+	int last10_pitchs_temp[10];
+	float acc_local[3];
+	for (int q=0; q<10;q++)
+	{
+		lsm6dsl_get_acc(acc_local, (acc_local+1), (acc_local+2));
+		last10_rolls_temp[q] = compute_roll(acc_local);
+		last10_pitchs_temp[q] = compute_pitch(acc_local);
+	}
+
+	set_last10_rolls_pitchs(last10_rolls_temp,last10_pitchs_temp);
+
 }
 
 
@@ -111,7 +134,8 @@ uint8_t lsm6dsl_init(void)
 		ctrl2 &= ~0xFF;
 		ctrl2 |= 0x70;
 		lsm6dsl_write_byte(LSM6DSL_ADDRESS_CTRL2, ctrl2);
-		return status;
+
+		fulfill_last10_rolls_pichs();
 
 	return status;
 }
