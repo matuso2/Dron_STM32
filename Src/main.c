@@ -72,8 +72,9 @@ int main(void)
 	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 	  memset(formated_text, '\0', sizeof(formated_text));
-	  sprintf(formated_text, "roll: %d, pitch: %d\r", roll_speed, pitch_speed);
-
+	  //sprintf(formated_text, "roll: %d, pitch: %d\r", roll_speed, pitch_speed);
+	  //sprintf(formated_text, "%0.4f,%0.4f,%0.4f\r", acc[0], acc[1], acc[2]);
+	  sprintf(formated_text, "%d\r", getMillis());
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
 	  LL_mDelay(10);
   }
@@ -113,6 +114,7 @@ void SystemClock_Config(void)
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(8000000);
   LL_RCC_SetI2CClockSource(LL_RCC_I2C1_CLKSOURCE_HSI);
+  SysTick_Config(SystemCoreClock/1000);
 }
 
 
