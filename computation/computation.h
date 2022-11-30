@@ -21,7 +21,9 @@ int compute_pitch_speed(float acc[3], int max_pitch_speed, int control_type);
 int rad_to_deg(double rad_angle);
 void set_last10_rolls_pitchs(int last10_rolls_temp[10],int last10_pitchs_temp[10]);
 
-void find_Z_peak(float acc[3]);
+void find_vertical_peak(float acc[3]);
 int8_t compute_vertical_speed(float acc[3]);
+void find_yaw_peak(float gyro[3]);
+int8_t compute_yaw_speed(float acc[3]);
 
 #endif /* COMPUTATION_H_ */
