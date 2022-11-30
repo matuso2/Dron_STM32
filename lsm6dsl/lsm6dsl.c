@@ -48,9 +48,9 @@ void lsm6dsl_get_acc(float* x, float* y, float* z)
 	yy = ((uint16_t)data[3]) << 8 | data[2];
 	zz = ((uint16_t)data[5]) << 8 | data[4];
 
-	*x = (xx >> 4) / 1000.0f;
-	*y = (yy >> 4) / 1000.0f;
-	*z = (zz >> 4) / 1000.0f;
+	*x = (xx >> 4) / 256.0f;
+	*y = (yy >> 4) / 256.0f;
+	*z = (zz >> 4) / 256.0f;
 }
 
 //float* get_gyro()
@@ -126,7 +126,7 @@ uint8_t lsm6dsl_init(void)
 	//acc device config
 		uint8_t ctrl1 = lsm6dsl_read_byte(LSM6DSL_ADDRESS_CTRL1);
 		ctrl1 &= ~0xFC;
-		ctrl1 |= 0x70;
+		ctrl1 |= 0x7C;
 		lsm6dsl_write_byte(LSM6DSL_ADDRESS_CTRL1, ctrl1);
 
 		//gyro device config
