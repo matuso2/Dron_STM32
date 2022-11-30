@@ -217,7 +217,7 @@ void DMA1_Channel7_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
-uint32_t getMillis()
+uint32_t getMillis(void)
 {
 	return SysTick_counter;
 }

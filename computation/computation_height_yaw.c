@@ -7,25 +7,33 @@
 
 #include "computation.h"
 
-float peak_limits[2] = {2, -1};
-uint32_t currentTime = 0;
-uint32_t lastTime = 0;
+float peak_limits[2] = {2.5,-0.5};
+uint32_t current_time, last_peak_time = 0;
+int8_t current_vertical_speed = 0;
 
-uint8_t find_Z_peak(float acc[3])
+void find_Z_peak(float acc[3])
 {
+	current_time = getMillis();
 	if(acc[2] > peak_limits[0]){
-
-		return 1;
+		if(current_time - last_peak_time > 500){ // Zabranenie citaniu nechcenej spicky
+			last_peak_time = current_time;
+			current_vertical_speed = 1;
+		}
 	}
 	else if(acc[2] < peak_limits[1]){
-
-		return 2;
+		if(current_time - last_peak_time > 500){
+			last_peak_time = current_time;
+			current_vertical_speed = -1;
+		}
 	}
-	return 0;
 }
 
-uint8_t compute_vertical_speed(float acc[3])
+int8_t compute_vertical_speed(float acc[3])
 {
-	int vertical_speed = find_Z_peak(acc);
-	return vertical_speed;
+	find_Z_peak(acc);
+	if(current_time - last_peak_time > 2000){ // Drzanie vystupu na x [ms]
+		current_vertical_speed = 0;
+	}
+
+	return current_vertical_speed;
 }
