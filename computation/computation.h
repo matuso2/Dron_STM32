@@ -9,6 +9,7 @@
 #define COMPUTATION_H_
 
 #include "math.h"
+#include "stdio.h"
 
 int compute_pitch(float acc[3]);
 int compute_roll(float acc[3]);
@@ -19,5 +20,8 @@ int compute_pitch_speed(float acc[3], int max_pitch_speed, int control_type);
 
 int rad_to_deg(double rad_angle);
 void set_last10_rolls_pitchs(int last10_rolls_temp[10],int last10_pitchs_temp[10]);
+
+uint8_t find_Z_peak(float acc[3]);
+uint8_t compute_vertical_speed(float acc[3]);
 
 #endif /* COMPUTATION_H_ */

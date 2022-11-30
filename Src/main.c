@@ -36,7 +36,7 @@
 
 uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
-int roll_speed, pitch_speed;
+int roll_speed, pitch_speed, vertical_speed;
 char formated_text[30];
 
 /*config, after testing set both speeds to 100*/
@@ -70,11 +70,13 @@ int main(void)
 
 	  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+	  vertical_speed = compute_vertical_speed(acc);
 
 	  memset(formated_text, '\0', sizeof(formated_text));
 	  //sprintf(formated_text, "roll: %d, pitch: %d\r", roll_speed, pitch_speed);
 	  //sprintf(formated_text, "%0.4f,%0.4f,%0.4f\r", acc[0], acc[1], acc[2]);
-	  sprintf(formated_text, "%d\r", getMillis());
+	  //sprintf(formated_text, "%d\r", getMillis());
+	  sprintf(formated_text, "%0.4f,%d\r",acc[2], vertical_speed);
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
 	  LL_mDelay(10);
   }
