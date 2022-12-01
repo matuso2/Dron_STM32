@@ -1,4 +1,5 @@
 /* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "i2c.h"
 #include "gpio.h"
@@ -11,7 +12,7 @@
 #include "lsm6dsl.h"
 #include "computation.h"
 #include "math.h"
-#include "assignment.h"
+#include "buttons_and_leds.h"
 
 #define CHAR_BUFF_SIZE	30
 
@@ -29,6 +30,7 @@ int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 
 void SystemClock_Config(void);
+void setRegisters();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 
 int main(void)
@@ -47,31 +49,7 @@ int main(void)
 
   lsm6dsl_init();
 
-  RCC_AHBENR_REG |= (uint32_t)(1 << 17);
-
-  /*OUTPUT*/
-  /*A4(p4) A2(p1) */
-  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 8);  //reset
-  GPIOA_MODER_REG |= (uint32_t)(1 << 8);	//output - 01
-  GPIOA_OTYPER_REG &= ~(0x1 << 4); //OTYPER - 16b - output push pull / reset
-  GPIOA_OSPEEDER_REG &= ~(0x3 << 8); //OSPEEDR - 32b - x0=low speed
-  GPIOA_PUPDR_REG &= ~(0x3 << 8); // PUPDR - 32b - 00=no pull, no pull down
-
-  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 2);  //reset
-  GPIOA_MODER_REG |= (uint32_t)(1 << 2);	//output - 01
-  GPIOA_OTYPER_REG &= ~(0x1 << 1); //OTYPER - 16b - output push pull / reset
-  GPIOA_OSPEEDER_REG &= ~(0x3 << 2); //OSPEEDR - 32b - x0=low speed
-  GPIOA_PUPDR_REG &= ~(0x3 << 2); // PUPDR - 32b - 00=no pull, no pull down
-
-  /*INPUT*/
-  /*A2(p3) A0(p0)*/
-  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 6); // bazova addr - 00=input
-  GPIOA_PUPDR_REG &= ~(0x3 << 6); // PUPDR - 32b - reset
-  GPIOA_PUPDR_REG |= (0x1 << 6); //01=pull up - ked stalcim tlacidlo = logicka 0
-
-  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 0); // bazova addr - 00=input
-  GPIOA_PUPDR_REG &= ~(0x3 << 0); // PUPDR - 32b - reset
-  GPIOA_PUPDR_REG |= (0x1 << 0); //01=pull up - ked stalcim tlacidlo = logicka 0
+  setRegisters();
 
   uint8_t led1_state = 0;
 
@@ -141,6 +119,36 @@ EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples)
 	edge_state = pin_state;
 	return NONE;
 }
+
+void setRegisters()
+{
+	RCC_AHBENR_REG |= (uint32_t)(1 << 17);
+
+	  /*OUTPUT*/
+	  /*A4(p4) A2(p1) */
+	  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 8);  //reset
+	  GPIOA_MODER_REG |= (uint32_t)(1 << 8);	//output - 01
+	  GPIOA_OTYPER_REG &= ~(0x1 << 4); //OTYPER - 16b - output push pull / reset
+	  GPIOA_OSPEEDER_REG &= ~(0x3 << 8); //OSPEEDR - 32b - x0=low speed
+	  GPIOA_PUPDR_REG &= ~(0x3 << 8); // PUPDR - 32b - 00=no pull, no pull down
+
+	  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 2);  //reset
+	  GPIOA_MODER_REG |= (uint32_t)(1 << 2);	//output - 01
+	  GPIOA_OTYPER_REG &= ~(0x1 << 1); //OTYPER - 16b - output push pull / reset
+	  GPIOA_OSPEEDER_REG &= ~(0x3 << 2); //OSPEEDR - 32b - x0=low speed
+	  GPIOA_PUPDR_REG &= ~(0x3 << 2); // PUPDR - 32b - 00=no pull, no pull down
+
+	  /*INPUT*/
+	  /*A2(p3) A0(p0)*/
+	  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 6); // bazova addr - 00=input
+	  GPIOA_PUPDR_REG &= ~(0x3 << 6); // PUPDR - 32b - reset
+	  GPIOA_PUPDR_REG |= (0x1 << 6); //01=pull up - ked stalcim tlacidlo = logicka 0
+
+	  GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 0); // bazova addr - 00=input
+	  GPIOA_PUPDR_REG &= ~(0x3 << 0); // PUPDR - 32b - reset
+	  GPIOA_PUPDR_REG |= (0x1 << 0); //01=pull up - ked stalcim tlacidlo = logicka 0
+}
+
 
 /**
   * @brief System Clock Configuration

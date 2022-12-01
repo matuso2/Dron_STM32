@@ -18,9 +18,6 @@ typedef enum EDGE_TYPE{
 
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 
-
-
-
 /* General purpose input output port A macros */
 //GPIOA peripheral base address
 #define	GPIOA_BASE_ADDR			(uint32_t)(0x48000000U)
