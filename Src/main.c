@@ -4,7 +4,6 @@
 #include "i2c.h"
 #include "gpio.h"
 #include "usart.h"
-#include "lis3mdltr.h"
 #include "stdio.h"
 #include "string.h"
 #include "dma.h"
@@ -15,23 +14,23 @@
 #include "buttons_and_leds.h"
 
 #define CHAR_BUFF_SIZE	30
-
 uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
 int roll_speed, pitch_speed;
-char formated_text[30];
+char formated_text[50];
 uint8_t rc_control_state = 1;
 char commandToPutty[] = "cmdToPutty";
 uint32_t edge_state = 0; // previous impulse value
 uint32_t count_i = 1;
-/*config, after testing set both speeds to 100*/
-int max_roll_speed = 50;
-int max_pitch_speed = 50;
-int control_type = 2; //1 linear, 2 quadratic
 void SystemClock_Config(void);
 void setRegisters();
 void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
+
+/*config, after testing set both speeds to 100*/
+int max_roll_speed = 50;
+int max_pitch_speed = 50;
+int control_type = 2; //1 linear, 2 quadratic
 
 int main(void)
 {
@@ -54,7 +53,6 @@ int main(void)
 
   while (1)
   {
-
 	  stateButtonControl();
 	  memset(formated_text, '\0', sizeof(formated_text));
 
@@ -88,9 +86,9 @@ int main(void)
 
 		  LED2_ON;
 	  }
+	  // do nothing
 	  else
 	  {
-		  // do nothing
 		  sprintf(formated_text, "%d, %d, %d, %d, %s \r", 0, 0, 0, 0, "" );
 		  LED2_OFF;
 	  }
