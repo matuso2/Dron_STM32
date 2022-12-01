@@ -20,17 +20,17 @@ uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
 int roll_speed, pitch_speed;
 char formated_text[30];
-
+uint8_t rc_control_state = 1;
+char commandToPutty[] = "cmdToPutty";
 uint32_t edge_state = 0; // previous impulse value
 uint32_t count_i = 1;
-
 /*config, after testing set both speeds to 100*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
-
 void SystemClock_Config(void);
 void setRegisters();
+void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 
 int main(void)
@@ -50,50 +50,75 @@ int main(void)
   lsm6dsl_init();
 
   setRegisters();
-
-  uint8_t led1_state = 0;
+  LED1_ON;
 
   while (1)
   {
-	  //BUTTON_GET_STATE - aktualny stav na pine
-	  //edge_state - globalna premenna co bolo na pine
-	  if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
-	  {
-	  		if(led1_state == 0)
-	  		{
-	  			LED1_ON;
-	  			led1_state = 1;
-	  		}
-	  		else
-	  		{
-	  			LED1_OFF;
-	  			led1_state = 0;
-	  		}
-	  }
 
+	  stateButtonControl();
+	  memset(formated_text, '\0', sizeof(formated_text));
+
+	  // button 2 has to be pressed in order to control drone via STM
 	  if (BUTTON2_GET_STATE)
 	  {
+		  // RC control section
+		  if (rc_control_state)
+		  {
+			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
+			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+
+			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+
+			  // format: LR,FB,UD,Y,command
+			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, "rc" );
+		  }
+		  // OTHER control section (flips, land & take_off)
+		  else
+		  {
+			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
+			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+
+			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+
+			  // format: LR,FB,UD,Y,command
+			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, commandToPutty);
+		  }
+
 		  LED2_ON;
 	  }
 	  else
 	  {
+		  // do nothing
+		  sprintf(formated_text, "%d, %d, %d, %d, %s \r", 0, 0, 0, 0, "" );
 		  LED2_OFF;
 	  }
-
-//	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
-//	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
-//
-//	  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-//	  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
-
-	  memset(formated_text, '\0', sizeof(formated_text));
-	  sprintf(formated_text, "%d\r", BUTTON2_GET_STATE);
 
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
 	  LL_mDelay(10);
   }
 }
 
+
+void stateButtonControl()
+{
+	//BUTTON_GET_STATE - aktualny stav na pine
+	//edge_state - globalna premenna co bolo na pine
+	if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
+	{
+		if(rc_control_state == 0)
+		{
+			LED1_ON;
+		  	rc_control_state = 1;
+		}
+		else
+		{
+			LED1_OFF;
+		  	rc_control_state = 0;
+		}
+	}
+}
 
 // pin_state = aktualny stav vstupneho pinu
 // samples  = kolkokrat musi byt detegovany stav vstupneho pinu
