@@ -19,13 +19,7 @@ typedef enum EDGE_TYPE{
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 
 
-//#define AAA *((volatile uint32_t *)((uint32_t)0x48000000))
 
-/**
- * 		This header file provides macros to the MCU's registers required for this assignment.
- * 		Your task is to provide their actual implementation so you can use them in application in "main.c"
- * 		and make your "LED blink" application code readable and great again!
- */
 
 /* General purpose input output port A macros */
 //GPIOA peripheral base address
@@ -55,10 +49,13 @@ EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 //                              *((volatile uint32_t *)(uint32_t)(RCC_BASE_ADDR + 0x00000014U))
 
 /* LED and button macros */
-#define LED_ON					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x18U))) |= (1 << 4) // on
-#define LED_OFF					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x28U))) |= (1 << 4) // reset
+#define LED1_ON					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x18U))) |= (1 << 4) // on
+#define LED1_OFF					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x28U))) |= (1 << 4) // reset
+#define LED2_ON					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x18U))) |= (1 << 1) // on
+#define LED2_OFF					*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x28U))) |= (1 << 1) // reset
 
-#define BUTTON_GET_STATE		!(*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x10U))) & (1 << 3)) // 16b
+#define BUTTON1_GET_STATE		!(*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x10U))) & (1 << 3)) // 16b
+#define BUTTON2_GET_STATE		!(*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x10U))) & (1 << 0)) // 16b
 
 
 
