@@ -31,6 +31,7 @@
 #include "lsm6dsl.h"
 #include "computation.h"
 #include "math.h"
+#include "assignment.h"
 
 #define CHAR_BUFF_SIZE	30
 
@@ -39,12 +40,44 @@ float mag[3], acc[3], gyro[3];
 int roll_speed, pitch_speed;
 char formated_text[30];
 
+uint32_t edge_state = 0; // predosla hodnota impulzu
+uint32_t count_i = 1;
+
 /*config, after testing set both speeds to 100*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 
+
+
 void SystemClock_Config(void);
+
+// pin_state = aktualny stav vstupneho pinu
+// samples  = kolkokrat musi byt detegovany stav vstupneho pinu
+EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples)
+{
+	if (edge_state != pin_state) //prve volanie funkcie
+	{
+		count_i = 1;
+	}
+	else //ostatne volania fukncie kym sa pin_state nemeni
+	{
+		count_i ++;
+	}
+
+
+	if (count_i == samples) //zapnutie led len ak sa rovnaju premenne
+	{
+		if (pin_state) //ak je stlacene tlacidlo
+		{
+			return RISING;
+		}
+	}
+
+	edge_state = pin_state;
+	return NONE;
+}
+
 
 
 int main(void)
@@ -63,8 +96,47 @@ int main(void)
 
   lsm6dsl_init();
 
+  RCC_AHBENR_REG |= (uint32_t)(1 << 17);
+
+  /*OUTPUT*/
+   GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 8);  //reset
+   GPIOA_MODER_REG |= (uint32_t)(1 << 8);	//output - 01
+   //nastavenie push pull
+   GPIOA_OTYPER_REG &= ~(0x1 << 4); //OTYPER - 16b - output push pull / reset
+   //Set low speed
+   GPIOA_OSPEEDER_REG &= ~(0x3 << 8); //OSPEEDR - 32b - x0=low speed
+   //Set no pull up no pull down
+   GPIOA_PUPDR_REG &= ~(0x3 << 8); // PUPDR - 32b - 00=no pull, no pull down
+
+   /*INPUT*/
+   // Set 3 as input
+   GPIOA_MODER_REG &= ~(uint32_t)(0x3 << 6); // bazova addr - 00=input
+   //Set pull up for GPIOB pin 6 (input)
+   // nastavenie inputu ako pull-up, v zaklade 1, zopne sa na 0
+   GPIOA_PUPDR_REG &= ~(0x3 << 6); // PUPDR - 32b - reset
+   GPIOA_PUPDR_REG |= (0x1 << 6); //01=pull up - ked stalcim tlacidlo = logicka 0
+
+   uint8_t led_state = 0;
+
   while (1)
   {
+
+	  //BUTTON_GET_STATE - aktualny stav na pine
+	  //edge_state - globalna premenna co bolo na pine
+	  if(edgeDetect(BUTTON_GET_STATE,5) == RISING)
+	  {
+	  		if(led_state == 0)
+	  		{
+	  			LED_ON;
+	  			led_state = 1;
+	  		}
+	  		else
+	  		{
+	  			LED_OFF;
+	  			led_state = 0;
+	  		}
+	  }
+
 	  lsm6dsl_get_acc(acc, (acc+1), (acc+2)); //volanie hlavnej funkcie
 	  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
