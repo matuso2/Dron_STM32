@@ -71,7 +71,7 @@ int main(void)
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, "rc" );
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", roll_speed, pitch_speed, 0, 0, "rc" );
 		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
@@ -83,7 +83,7 @@ int main(void)
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, commandToPutty);
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", roll_speed, pitch_speed, 0, 0, commandToPutty);
 		  }
 
 		  LED2_ON;
@@ -91,7 +91,7 @@ int main(void)
 	  // do nothing
 	  else
 	  {
-		  sprintf(formated_text, "%d, %d, %d, %d, %s \r", 0, 0, 0, 0, "" );
+		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "" );
 		  LED2_OFF;
 	  }
 
