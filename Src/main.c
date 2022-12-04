@@ -24,7 +24,7 @@ void SystemClock_Config(void);
 void setRegisters();
 void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
-int roll_speed, pitch_speed, yaw_speed, vertical_speed;
+int roll_speed, pitch_speed, yaw_speed, vertical_speed, last_button_state, set_speed_to_zero;
 char formated_text[50];
 
 /*config, after testing set both speeds to 100*/
@@ -77,27 +77,33 @@ int main(void)
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
-			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
-			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+			  if(set_speed_to_zero==0){
+				  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
+				  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
-			  int takeoff_land = compute_vertical_speed(acc);
-			  if (takeoff_land<0){
-				  memset(commandToPutty,'\0', sizeof(commandToPutty));
-				  strcpy(commandToPutty,"LAND");
-			  }
-			  else if (takeoff_land>0){
-				  memset(commandToPutty,'\0', sizeof(commandToPutty));
-				  strcpy(commandToPutty,"TAKEOFF");
+				  int takeoff_land = compute_vertical_speed(acc);
+				  if (takeoff_land<0){
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+					  strcpy(commandToPutty,"LAND");
+				  }
+				  else if (takeoff_land>0){
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+					  strcpy(commandToPutty,"TAKEOFF");
+				  }
+				  else{
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+				  	  strcpy(commandToPutty,"donothing");
+				  }
+				  //roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+				  //pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+
+				  // format: LR,FB,UD,Y,command
+				  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
 			  }
 			  else{
-				  memset(commandToPutty,'\0', sizeof(commandToPutty));
-				  strcpy(commandToPutty,"donothing");
+				  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "rc" );
+				  set_speed_to_zero=set_speed_to_zero-1;
 			  }
-			  //roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-			  //pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
-
-			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
 		  }
 
 		  LED2_ON;
@@ -121,6 +127,7 @@ void stateButtonControl()
 	//edge_state - globalna premenna co bolo na pine
 	if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
 	{
+		last_button_state=rc_control_state;
 		if(rc_control_state == 0)
 		{
 			LED1_ON;
@@ -128,8 +135,12 @@ void stateButtonControl()
 		}
 		else
 		{
+
 			LED1_OFF;
 		  	rc_control_state = 0;
+		}
+		if(last_button_state==1&&rc_control_state==0){
+			set_speed_to_zero=2;
 		}
 	}
 }
