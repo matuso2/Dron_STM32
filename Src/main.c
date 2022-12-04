@@ -16,8 +16,6 @@
 #define CHAR_BUFF_SIZE	30
 uint8_t temp = 0;
 float mag[3], acc[3], gyro[3];
-int roll_speed, pitch_speed;
-char formated_text[50];
 uint8_t rc_control_state = 1;
 char commandToPutty[] = "cmdToPutty";
 uint32_t edge_state = 0; // previous impulse value
@@ -26,6 +24,8 @@ void SystemClock_Config(void);
 void setRegisters();
 void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
+int roll_speed, pitch_speed, yaw_speed, vertical_speed;
+char formated_text[30];
 
 /*config, after testing set both speeds to 100*/
 int max_roll_speed = 50;
@@ -64,6 +64,8 @@ int main(void)
 		  {
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+	  yaw_speed = compute_yaw_speed(gyro);
+	  vertical_speed = compute_vertical_speed(acc);
 
 			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
@@ -207,6 +209,7 @@ void SystemClock_Config(void)
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(8000000);
   LL_RCC_SetI2CClockSource(LL_RCC_I2C1_CLKSOURCE_HSI);
+  SysTick_Config(SystemCoreClock/1000);
 }
 
 

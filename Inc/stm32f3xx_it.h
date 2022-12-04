@@ -59,6 +59,8 @@ void SysTick_Handler(void);
 void I2C1_EV_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
+uint32_t getMillis(void);
+
 /* USER CODE END EFP */
 
 #ifdef __cplusplus
