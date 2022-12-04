@@ -25,7 +25,7 @@ void setRegisters();
 void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 int roll_speed, pitch_speed, yaw_speed, vertical_speed;
-char formated_text[30];
+char formated_text[50];
 
 /*config, after testing set both speeds to 100*/
 int max_roll_speed = 50;
@@ -64,8 +64,9 @@ int main(void)
 		  {
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
-	  yaw_speed = compute_yaw_speed(gyro);
-	  vertical_speed = compute_vertical_speed(acc);
+
+			  yaw_speed = compute_yaw_speed(gyro);
+			  vertical_speed = compute_vertical_speed(acc);
 
 			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
@@ -79,21 +80,24 @@ int main(void)
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
-			  takeoff_land = compute_vertical_speed(acc);
+			  int takeoff_land = compute_vertical_speed(acc);
 			  if (takeoff_land<0){
-			  	  commandToPutty="land";
+				  memset(commandToPutty,'\0', sizeof(commandToPutty));
+				  strcpy(commandToPutty,"LAND");
 			  }
-			  if (takeoff_land>0){
-				  commandToPutty="takeoff";
+			  else if (takeoff_land>0){
+				  memset(commandToPutty,'\0', sizeof(commandToPutty));
+				  strcpy(commandToPutty,"TAKEOFF");
 			  }
 			  else{
-				  commandToPutty="donothing";
+				  memset(commandToPutty,'\0', sizeof(commandToPutty));
+				  strcpy(commandToPutty,"donothing");
 			  }
-			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+			  //roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+			  //pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty);
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
 		  }
 
 		  LED2_ON;
