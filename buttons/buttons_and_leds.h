@@ -5,6 +5,8 @@
  *      Author: jakub
  */
 
+#include "stdio.h"
+
 //STM32F328k8
 #ifndef ASSIGNMENT_H_
 #define ASSIGNMENT_H_
@@ -17,6 +19,7 @@ typedef enum EDGE_TYPE{
 }EDGE_TYPE;
 
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
+void setRegisters(void);
 
 /* General purpose input output port A macros */
 //GPIOA peripheral base address
