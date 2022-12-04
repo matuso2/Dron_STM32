@@ -71,7 +71,7 @@ int main(void)
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", roll_speed, pitch_speed, 0, 0, "rc" );
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", -roll_speed, pitch_speed, vertical_speed*20, yaw_speed*20, "rc" );
 		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
@@ -79,11 +79,21 @@ int main(void)
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
+			  takeoff_land = compute_vertical_speed(acc);
+			  if (takeoff_land<0){
+			  	  commandToPutty="land";
+			  }
+			  if (takeoff_land>0){
+				  commandToPutty="takeoff";
+			  }
+			  else{
+				  commandToPutty="donothing";
+			  }
 			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", roll_speed, pitch_speed, 0, 0, commandToPutty);
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty);
 		  }
 
 		  LED2_ON;
@@ -91,7 +101,7 @@ int main(void)
 	  // do nothing
 	  else
 	  {
-		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "" );
+		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "donothing" );
 		  LED2_OFF;
 	  }
 
