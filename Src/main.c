@@ -140,7 +140,7 @@ void stateButtonControl()
 		  	rc_control_state = 0;
 		}
 		if(last_button_state==1&&rc_control_state==0){
-			set_speed_to_zero=2;
+			set_speed_to_zero=10;
 		}
 	}
 }
