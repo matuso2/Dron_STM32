@@ -24,7 +24,7 @@ void SystemClock_Config(void);
 void setRegisters();
 void stateButtonControl();
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
-int roll_speed, pitch_speed, yaw_speed, vertical_speed, last_button_state, set_speed_to_zero;
+int roll_speed, pitch_speed, yaw_speed, vertical_speed, last_button_state, set_speed_to_zero=0;
 char formated_text[50];
 
 /*config, after testing set both speeds to 100*/
@@ -57,6 +57,10 @@ int main(void)
 	  memset(formated_text, '\0', sizeof(formated_text));
 
 	  // button 2 has to be pressed in order to control drone via STM
+	  if (set_speed_to_zero!=0){
+	  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "rc" );
+	 				  set_speed_to_zero=set_speed_to_zero-1;}
+
 	  if (BUTTON2_GET_STATE)
 	  {
 		  // RC control section
@@ -100,10 +104,7 @@ int main(void)
 				  // format: LR,FB,UD,Y,command
 				  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
 			  }
-			  else{
-				  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "rc" );
-				  set_speed_to_zero=set_speed_to_zero-1;
-			  }
+
 		  }
 
 		  LED2_ON;
@@ -140,7 +141,7 @@ void stateButtonControl()
 		  	rc_control_state = 0;
 		}
 		if(last_button_state==1&&rc_control_state==0){
-			set_speed_to_zero=10;
+			set_speed_to_zero=5;
 		}
 	}
 }
