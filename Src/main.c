@@ -18,7 +18,7 @@
 char formated_text[50];
 char commandToPutty[] = "cmdToPutty";
 float  acc[3], gyro[3];
-int roll_speed, pitch_speed;
+int roll_speed, pitch_speed, yaw_speed, vertical_speed, last_button_state, zero_speed_iterations=0;
 
 /*config*/
 int max_roll_speed = 50;
@@ -52,6 +52,10 @@ int main(void)
 	  memset(formated_text, '\0', sizeof(formated_text));
 
 	  // button 2 has to be pressed in order to control drone via STM
+	  if (zero_speed_iterations!=0){
+	  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "rc" );
+	 				  zero_speed_iterations=zero_speed_iterations-1;}
+
 	  if (BUTTON2_GET_STATE)
 	  {
 		  // RC control section
@@ -60,32 +64,57 @@ int main(void)
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
+			  yaw_speed = compute_yaw_speed(gyro);
+			  vertical_speed = compute_vertical_speed(acc);
+
 			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, "rc" );
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", -roll_speed, pitch_speed, vertical_speed*20, yaw_speed*20, "rc" );
 		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
-			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
-			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+			  if(zero_speed_iterations==0){
+				  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
+				  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
-			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+				  int takeoff_land = compute_vertical_speed(acc);
+				  if (takeoff_land<0){
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+					  strcpy(commandToPutty,"LAND");
+				  }
+				  else if (takeoff_land>0){
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+					  strcpy(commandToPutty,"TAKEOFF");
+				  }
+				  else{
+					  memset(commandToPutty,'\0', sizeof(commandToPutty));
+				  	  strcpy(commandToPutty,"donothing");
+				  }
+				  //roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+				  //pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
 
-			  // format: LR,FB,UD,Y,command
-			  sprintf(formated_text, "%d, %d, %d, %d, %s \r", roll_speed, pitch_speed, 0, 0, commandToPutty);
+				  // format: LR,FB,UD,Y,command
+				  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
+			  }
+
 		  }
 
 		  LED2_ON;
 	  }
 	  // do nothing
 	  else
+		  //
 	  {
-		  sprintf(formated_text, "%d, %d, %d, %d, %s \r", 0, 0, 0, 0, "" );
-		  LED2_OFF;
+		  if(zero_speed_iterations==0){
+		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "donothing" );
+		  LED2_OFF;}
+	  }
+
+	  if(BUTTON2_GET_STATE==0&&rc_control_state==1){
+		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, "rc" );
 	  }
 
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
@@ -124,6 +153,7 @@ void SystemClock_Config(void)
   LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
   LL_SetSystemCoreClock(8000000);
   LL_RCC_SetI2CClockSource(LL_RCC_I2C1_CLKSOURCE_HSI);
+  SysTick_Config(SystemCoreClock/1000);
 }
 
 
