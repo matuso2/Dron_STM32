@@ -10,6 +10,23 @@
 uint32_t edge_state = 0; // previous impulse value
 uint32_t count_i = 1;
 uint8_t rc_control_state = 1;
+int last_button_state, state_changed_from_rc=0;
+
+
+
+
+int checkIfStateChangedFromRc()
+{
+	if (state_changed_from_rc)
+	{
+		state_changed_from_rc = 0;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 uint8_t getRcControlState()
 {
@@ -42,12 +59,14 @@ EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples)
 	return NONE;
 }
 
-void stateButtonControl()
+void checkControlStateButton()
 {
 	//BUTTON_GET_STATE - aktualny stav na pine
 	//edge_state - globalna premenna co bolo na pine
 	if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
 	{
+		last_button_state = rc_control_state;
+
 		if(rc_control_state == 0)
 		{
 			LED1_ON;
@@ -57,6 +76,11 @@ void stateButtonControl()
 		{
 			LED1_OFF;
 		  	rc_control_state = 0;
+		}
+
+		// bol RC a teraz je INE
+		if(last_button_state && !rc_control_state){
+			state_changed_from_rc = 1;
 		}
 	}
 }

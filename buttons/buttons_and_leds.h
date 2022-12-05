@@ -19,8 +19,9 @@ typedef enum EDGE_TYPE{
 
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 void setRegisters(void);
-void stateButtonControl();
+void checkControlStateButton();
 uint8_t getRcControlState();
+int checkIfStateChangedFromRc();
 
 /* General purpose input output port A macros */
 //GPIOA peripheral base address
