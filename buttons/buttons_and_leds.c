@@ -9,11 +9,18 @@
 
 uint32_t edge_state = 0; // previous impulse value
 uint32_t count_i = 1;
+uint8_t rc_control_state = 1;
 
-// pin_state = aktualny stav vstupneho pinu
-// samples  = kolkokrat musi byt detegovany stav vstupneho pinu
+uint8_t getRcControlState()
+{
+	return rc_control_state;
+}
+
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples)
 {
+	/* pin_state = aktualny stav vstupneho pinu
+	* samples  = kolkokrat musi byt detegovany stav vstupneho pin
+	*/
 	if (edge_state != pin_state) //prve volanie funkcie
 	{
 		count_i = 1;
@@ -34,6 +41,26 @@ EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples)
 	edge_state = pin_state;
 	return NONE;
 }
+
+void stateButtonControl()
+{
+	//BUTTON_GET_STATE - aktualny stav na pine
+	//edge_state - globalna premenna co bolo na pine
+	if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
+	{
+		if(rc_control_state == 0)
+		{
+			LED1_ON;
+		  	rc_control_state = 1;
+		}
+		else
+		{
+			LED1_OFF;
+		  	rc_control_state = 0;
+		}
+	}
+}
+
 
 void setRegisters()
 {

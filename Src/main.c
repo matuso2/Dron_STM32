@@ -13,20 +13,20 @@
 #include "math.h"
 #include "buttons_and_leds.h"
 
+/*variables & defines*/
 #define CHAR_BUFF_SIZE	30
-uint8_t temp = 0;
-float mag[3], acc[3], gyro[3];
-int roll_speed, pitch_speed;
 char formated_text[50];
-uint8_t rc_control_state = 1;
 char commandToPutty[] = "cmdToPutty";
-void SystemClock_Config(void);
-void stateButtonControl();
+float  acc[3], gyro[3];
+int roll_speed, pitch_speed;
 
-/*config, after testing set both speeds to 100*/
+/*config*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
+
+/*declaration of functions*/
+void SystemClock_Config(void);
 
 int main(void)
 {
@@ -41,7 +41,6 @@ int main(void)
   MX_I2C1_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-
   lsm6dsl_init();
 
   setRegisters();
@@ -56,7 +55,7 @@ int main(void)
 	  if (BUTTON2_GET_STATE)
 	  {
 		  // RC control section
-		  if (rc_control_state)
+		  if (getRcControlState())
 		  {
 			  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 			  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
@@ -95,30 +94,6 @@ int main(void)
 }
 
 
-void stateButtonControl()
-{
-	//BUTTON_GET_STATE - aktualny stav na pine
-	//edge_state - globalna premenna co bolo na pine
-	if(edgeDetect(BUTTON1_GET_STATE,5) == RISING)
-	{
-		if(rc_control_state == 0)
-		{
-			LED1_ON;
-		  	rc_control_state = 1;
-		}
-		else
-		{
-			LED1_OFF;
-		  	rc_control_state = 0;
-		}
-	}
-}
-
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
 void SystemClock_Config(void)
 {
   LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
@@ -152,32 +127,16 @@ void SystemClock_Config(void)
 }
 
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
 
-  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+
 void assert_failed(char *file, uint32_t line)
 { 
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+
 }
 #endif /* USE_FULL_ASSERT */
 

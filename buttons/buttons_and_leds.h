@@ -7,19 +7,20 @@
 
 #include "stdio.h"
 
-//STM32F328k8
 #ifndef ASSIGNMENT_H_
 #define ASSIGNMENT_H_
 
-//TYPEDEF
 typedef enum EDGE_TYPE{
 	NONE = 0,
 	RISING = 1,
 	FALLING = 2
 }EDGE_TYPE;
 
+
 EDGE_TYPE edgeDetect(uint8_t pin_state, uint8_t samples);
 void setRegisters(void);
+void stateButtonControl();
+uint8_t getRcControlState();
 
 /* General purpose input output port A macros */
 //GPIOA peripheral base address
@@ -56,8 +57,5 @@ void setRegisters(void);
 
 #define BUTTON1_GET_STATE		!(*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x10U))) & (1 << 3)) // 16b
 #define BUTTON2_GET_STATE		!(*((volatile uint32_t *)((uint32_t)(0x48000000 + 0x10U))) & (1 << 0)) // 16b
-
-
-
 
 #endif /* ASSIGNMENT_H_ */
