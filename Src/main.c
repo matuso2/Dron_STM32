@@ -106,6 +106,12 @@ int main(void)
 			  setCommandToPutty("rc");
 			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty );
 		  }
+		  // if sending 5times RC null speeds
+		  else if(speed_reset_delay)
+		  {
+			  setCommandToPutty("rc");
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty);
+		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
