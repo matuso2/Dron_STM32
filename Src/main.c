@@ -31,7 +31,8 @@ int control_type = 2; //1 linear, 2 quadratic
 void SystemClock_Config(void);
 void setCommandToPutty(char cmd[50]);
 void checkIfTakeOffOrLand();
-
+double countUp(double c);
+double counter = 0;
 int main(void)
 {
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
@@ -52,6 +53,7 @@ int main(void)
 
   while (1)
   {
+	  counter = countUp(counter);
 	  memset(formated_text, '\0', sizeof(formated_text));
 
 	  checkControlStateButton();
@@ -63,7 +65,7 @@ int main(void)
 	  if (speed_reset_delay)
 	  {
 		  setCommandToPutty("rc");
-		  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty);
+		  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty, counter);
 		  speed_reset_delay -= 1;
 	  }
 
@@ -77,22 +79,22 @@ int main(void)
 		  if (getRcControlState())
 		  {
 
-			  yaw_speed = 20*compute_yaw_speed(gyro);
+			  yaw_speed = -20*compute_yaw_speed(gyro);
 			  vertical_speed = 20*compute_vertical_speed(acc);
 
-			  roll_speed = -compute_roll_speed(acc, max_roll_speed, control_type);
-			  pitch_speed = compute_pitch_speed(acc, max_pitch_speed, control_type);
+			  roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+			  pitch_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
 
 			  setCommandToPutty("rc");
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", roll_speed, pitch_speed, vertical_speed, yaw_speed, commandToPutty );
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", roll_speed, pitch_speed, vertical_speed, yaw_speed, commandToPutty, counter);
 		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
 			  takeoff_land = compute_vertical_speed(acc);
 			  checkIfTakeOffOrLand(compute_vertical_speed(acc));
-
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
+			  // pridat flipy
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty, counter);
 		  }
 
 		  LED2_ON;
@@ -104,19 +106,19 @@ int main(void)
 		  if (getRcControlState())
 		  {
 			  setCommandToPutty("rc");
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty );
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty, counter);
 		  }
 		  // if sending 5times RC null speeds
 		  else if(speed_reset_delay)
 		  {
 			  setCommandToPutty("rc");
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 0, 0, 0, 0, commandToPutty);
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty ,counter);
 		  }
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
 			  setCommandToPutty("doNothing");
-			  sprintf(formated_text, "\\%d, %d, %d, %d, %s \n\r", 1, 2, 3, 4, commandToPutty);
+			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty ,counter);
 		  }
 		  LED2_OFF;
 	  }
@@ -125,7 +127,15 @@ int main(void)
 	  LL_mDelay(10);
   }
 }
-
+double countUp(double c){
+	 if(c < 1000){
+		 c++;
+	 }
+	 else{
+		 c = 0;
+	 }
+	 return c;
+}
 
 void setCommandToPutty(char cmd[50])
 {
