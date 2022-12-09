@@ -21,7 +21,7 @@ char commandToPutty[] = "cmdToPutty";
 float  acc[3], gyro[3];
 int roll_speed, pitch_speed, yaw_speed, vertical_speed, speed_reset_delay=0;
 int takeoff_land; //>0 = takeoff, <0 = land
-
+int flip
 /*config*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
@@ -91,8 +91,13 @@ int main(void)
 		  // OTHER control section (flips, land & take_off)
 		  else
 		  {
-			  takeoff_land = compute_vertical_speed(acc);
-			  checkIfTakeOffOrLand(compute_vertical_speed(acc));
+			  //compute_roll_speed(acc, max_roll_speed, control_type);
+			  //-compute_pitch_speed(acc, max_pitch_speed, control_type);
+			  // todo vytvorit funkciu ktora detekuje flip na zaklade roll a pitch.
+
+
+			  takeoff_land = compute_vertical_speed(acc); // nemalo by byt toto dane do funkcie v riadku 95???
+			  checkIfTakeOffOrLand(compute_vertical_speed(acc)); // nechapem ako do tejto funkcie mozes dat premennu ked ta funkcia nema definovane ziadne parametre
 			  // pridat flipy
 			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty, counter);
 		  }
