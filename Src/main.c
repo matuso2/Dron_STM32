@@ -7,6 +7,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "dma.h"
+#include <stdlib.h>
 
 #include "lsm6dsl.h"
 #include "computation.h"
@@ -21,18 +22,19 @@ char commandToPutty[] = "cmdToPutty";
 float  acc[3], gyro[3];
 int roll_speed, pitch_speed, yaw_speed, vertical_speed, speed_reset_delay=0;
 int takeoff_land; //>0 = takeoff, <0 = land
-int flip
 /*config*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
-
+int counter = 0;
+int flipSpeedThreshold = 45;
 /*declaration of functions*/
 void SystemClock_Config(void);
 void setCommandToPutty(char cmd[50]);
 void checkIfTakeOffOrLand();
-double countUp(double c);
-double counter = 0;
+int countUp(int c);
+void checkForFlip();
+
 int main(void)
 {
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
@@ -95,9 +97,11 @@ int main(void)
 			  //-compute_pitch_speed(acc, max_pitch_speed, control_type);
 			  // todo vytvorit funkciu ktora detekuje flip na zaklade roll a pitch.
 
-
+			  setCommandToPutty("doNothing");
+			  checkForFlip();
 			  takeoff_land = compute_vertical_speed(acc); // nemalo by byt toto dane do funkcie v riadku 95???
 			  checkIfTakeOffOrLand(compute_vertical_speed(acc)); // nechapem ako do tejto funkcie mozes dat premennu ked ta funkcia nema definovane ziadne parametre
+
 			  // pridat flipy
 			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty, counter);
 		  }
@@ -125,6 +129,7 @@ int main(void)
 			  setCommandToPutty("doNothing");
 			  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty ,counter);
 		  }
+
 		  LED2_OFF;
 	  }
 
@@ -132,14 +137,37 @@ int main(void)
 	  LL_mDelay(10);
   }
 }
-double countUp(double c){
-	 if(c < 1000){
+int countUp(int c){
+	 int maxCount = 1000;
+	 if(c < maxCount){
 		 c++;
 	 }
 	 else{
 		 c = 0;
 	 }
 	 return c;
+}
+void checkForFlip(){
+	 int r_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+	 int p_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
+	 if (abs(r_speed) > flipSpeedThreshold && abs(p_speed) < flipSpeedThreshold){
+		 //r_flip
+		 if(r_speed > 0 ){
+			 setCommandToPutty("rFlip");
+		 }
+		 else{
+			 setCommandToPutty("lFlip");
+		 }
+	 }
+	 if(abs(p_speed) > flipSpeedThreshold && abs(r_speed) < flipSpeedThreshold){
+		 //p_flip
+		if(p_speed > 0 ){
+			setCommandToPutty("fFlip");
+		}
+		else{
+			setCommandToPutty("bFlip");
+		}
+	 }
 }
 
 void setCommandToPutty(char cmd[50])
@@ -155,9 +183,6 @@ void checkIfTakeOffOrLand()
 	}
 	else if (takeoff_land>0){
 		setCommandToPutty("TAKEOFF");
-	}
-	else{
-		setCommandToPutty("doNothing");
 	}
 }
 
