@@ -103,8 +103,7 @@ void controlDrone(){
 		// if sending 5times RC null speeds
 		else if(speed_reset_delay)
 		{
-			// TU DACO MUSELO BYT, a kedze sa ify nemenili - bude problem ked drzis deadmen switch a prepnes mod z RC
-			// tusim command RC a nuly
+			setCommandToPutty("rc");
 		}
 		// OTHER control section (flips, land & take_off)
 		else
