@@ -26,7 +26,7 @@ int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 int counter = 0;
-int flipSpeedThreshold = 30;
+int flipSpeedThreshold = 25;
 int flipLock = 0;
 
 int main()
@@ -100,6 +100,7 @@ void controlDrone(){
 		  // BUTTON2 NOT PRESSED
 		  else
 		  {
+			  resetEachSpeed();
 			  // RC control section
 			  if (getRcControlState())
 			  {
@@ -119,18 +120,21 @@ void controlDrone(){
 				 // sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty ,counter);
 			  }
 
+
 			  LED2_OFF;
 		  }
 }
 void checkForFlip(){
 	 int blockingAngle = 5;
 	 int r_speed = compute_filtered_roll(acc);
-	 int p_speed = compute_filtered_pitch(acc);
+	 int p_speed = -compute_filtered_pitch(acc);
+	 //pitch_speed = p_speed;
+	 //roll_speed = r_speed;
 
 	 if(abs(r_speed) < blockingAngle && abs(p_speed) < blockingAngle){
 			 flipLock = 0;
 		 }
-	 if(flipLock < 2){
+	 if(flipLock==0){
 	 if (abs(r_speed) > flipSpeedThreshold && abs(p_speed) < flipSpeedThreshold){
 		 //r_flip
 		 if(r_speed > 0 ){
@@ -140,7 +144,7 @@ void checkForFlip(){
 			 setCommandToPutty("lFlip");
 
 		 }
-		 flipLock++;
+		 flipLock=1;
 	 }
 	 if(abs(p_speed) > flipSpeedThreshold && abs(r_speed) < flipSpeedThreshold){
 		 //p_flip
@@ -150,7 +154,7 @@ void checkForFlip(){
 		else{
 			setCommandToPutty("bFlip");
 		}
-		flipLock++;
+		flipLock =1;
 	 	}
 	 }
 
@@ -179,6 +183,12 @@ void checkIfTakeOffOrLand(int takeoff_land)
 	else if (takeoff_land>0){
 		setCommandToPutty("TAKEOFF");
 	}
+}
+void resetEachSpeed(){
+	roll_speed =0;
+	pitch_speed = 0;
+	yaw_speed = 0;
+	vertical_speed = 0;
 }
 
 

@@ -53,5 +53,6 @@ int countUp(int c);
 void checkForFlip();
 void collectSensorData();
 void controlDrone();
+void resetEachSpeed();
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
