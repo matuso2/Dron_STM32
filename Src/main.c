@@ -27,7 +27,8 @@ int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 int counter = 0;
-int flipSpeedThreshold = 45;
+int flipSpeedThreshold = 48;
+int flipLock = 0;
 /*declaration of functions*/
 void SystemClock_Config(void);
 void setCommandToPutty(char cmd[50]);
@@ -74,6 +75,7 @@ int main(void)
 	  // BUTTON2 PRESSED
 	  if (BUTTON2_GET_STATE && !speed_reset_delay)
 	  {
+
 		  lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 		  lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
@@ -150,6 +152,10 @@ int countUp(int c){
 void checkForFlip(){
 	 int r_speed = compute_roll_speed(acc, max_roll_speed, control_type);
 	 int p_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
+	 if(abs(r_speed) < 10 && abs(p_speed) < 10){
+			 flipLock = 0;
+		 }
+	 if(flipLock == 0){
 	 if (abs(r_speed) > flipSpeedThreshold && abs(p_speed) < flipSpeedThreshold){
 		 //r_flip
 		 if(r_speed > 0 ){
@@ -157,7 +163,9 @@ void checkForFlip(){
 		 }
 		 else{
 			 setCommandToPutty("lFlip");
+
 		 }
+		 flipLock = 1;
 	 }
 	 if(abs(p_speed) > flipSpeedThreshold && abs(r_speed) < flipSpeedThreshold){
 		 //p_flip
@@ -167,7 +175,10 @@ void checkForFlip(){
 		else{
 			setCommandToPutty("bFlip");
 		}
+		flipLock = 1;
 	 }
+	 }
+
 }
 
 void setCommandToPutty(char cmd[50])
