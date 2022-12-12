@@ -26,7 +26,7 @@ int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 int counter = 0;
-int flipSpeedThreshold = 48;
+int flipSpeedThreshold = 30;
 int flipLock = 0;
 /*declaration of functions*/
 void SystemClock_Config(void);
@@ -144,12 +144,14 @@ int countUp(int c){
 	 return c;
 }
 void checkForFlip(){
-	 int r_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-	 int p_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
-	 if(abs(r_speed) < 10 && abs(p_speed) < 10){
+	 int blockingAngle = 5;
+	 int r_speed = compute_filtered_roll(acc);
+	 int p_speed = compute_filtered_pitch(acc);
+
+	 if(abs(r_speed) < blockingAngle && abs(p_speed) < blockingAngle){
 			 flipLock = 0;
 		 }
-	 if(flipLock == 0){
+	 if(flipLock < 2){
 	 if (abs(r_speed) > flipSpeedThreshold && abs(p_speed) < flipSpeedThreshold){
 		 //r_flip
 		 if(r_speed > 0 ){
@@ -159,7 +161,7 @@ void checkForFlip(){
 			 setCommandToPutty("lFlip");
 
 		 }
-		 flipLock = 1;
+		 flipLock++;
 	 }
 	 if(abs(p_speed) > flipSpeedThreshold && abs(r_speed) < flipSpeedThreshold){
 		 //p_flip
@@ -169,7 +171,7 @@ void checkForFlip(){
 		else{
 			setCommandToPutty("bFlip");
 		}
-		flipLock = 1;
+		flipLock++;
 	 }
 	 }
 
