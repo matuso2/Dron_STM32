@@ -21,13 +21,14 @@ char formated_text[50];
 char commandToPutty[] = "cmdToPutty";
 float  acc[3], gyro[3];
 int roll_speed, pitch_speed, yaw_speed, vertical_speed, speed_reset_delay=0;
+int counter = 0;
+int flip_angle_threshold = 25;
+int flipLock = 0;
+
 /*config*/
 int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
-int counter = 0;
-int flip_angle_threshold = 25;
-int flipLock = 0;
 
 int main()
 {
@@ -52,13 +53,16 @@ int main()
 	  countUp();
 	  memset(formated_text, '\0', sizeof(formated_text));
 	  checkControlStateButton();
-	  if(checkIfStateChangedFromRc()){
+	  if(checkIfStateChangedFromRc())
+	  {
 		  speed_reset_delay = 5;
 	  }
-	  if (speed_reset_delay){
+	  if (speed_reset_delay)
+	  {
 		  setCommandToPutty("rc");
 		  speed_reset_delay -= 1;
 	  }
+	  // logic
 	  controlDrone();
 	  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", roll_speed, pitch_speed, vertical_speed, yaw_speed, commandToPutty, counter);
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
@@ -69,65 +73,68 @@ int main()
 
 void controlDrone(){
 	 // BUTTON2 PRESSED
-		  if (BUTTON2_GET_STATE && !speed_reset_delay)
-		  {
-			  collectSensorData();
+	if (BUTTON2_GET_STATE && !speed_reset_delay)
+	{
+		collectSensorData();
+		// RC control section
+		if (getRcControlState())
+		{
+			setCommandToPutty("rc");
+		}
+		// OTHER control section (flips, land & take_off)
+		else
+		{
+			setCommandToPutty("doNothing");
+			checkForFlip();
+			checkIfTakeOffOrLand();
+		}
+		LED2_ON;
 
-			  // RC control section
-			  if (getRcControlState())
-			  {
-				  setCommandToPutty("rc");
-			  }
-			  // OTHER control section (flips, land & take_off)
-			  else
-			  {
-				  setCommandToPutty("doNothing");
-				  checkForFlip();
-				  checkIfTakeOffOrLand();
-			  }
+		}
+		// BUTTON2 NOT PRESSED
+		else
+		{
+		resetEachSpeed();
+		// RC control section
+		if (getRcControlState())
+		{
+			setCommandToPutty("rc");
+		}
+		// if sending 5times RC null speeds
+		else if(speed_reset_delay)
+		{
+			// TU DACO MUSELO BYT, a kedze sa ify nemenili - bude problem ked drzis deadmen switch a prepnes mod z RC
+			// tusim command RC a nuly
+		}
+		// OTHER control section (flips, land & take_off)
+		else
+		{
+			setCommandToPutty("doNothing");
+		}
+		LED2_OFF;
 
-			  LED2_ON;
-		  }
-		  // BUTTON2 NOT PRESSED
-		  else
-		  {
-			  resetEachSpeed();
-			  // RC control section
-			  if (getRcControlState())
-			  {
-				  setCommandToPutty("rc");
-				//  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty, counter);
-			  }
-			  // if sending 5times RC null speeds
-			  else if(speed_reset_delay)
-			  {
-				  setCommandToPutty("rc");
-				//  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty ,counter);
-			  }
-			  // OTHER control section (flips, land & take_off)
-			  else
-			  {
-				  setCommandToPutty("doNothing");
-				 // sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 1, 2, 3, 4, commandToPutty ,counter);
-			  }
-
-
-			  LED2_OFF;
-		  }
+	}
 }
 
-void countUp(){
+
+void countUp()
+{
 	 int maxCount = 1000;
-	 if(counter < maxCount){
+
+	 if(counter < maxCount)
+	 {
 		 counter++;
 	 }
-	 else{
+	 else
+	 {
 		 counter = 0;
 	 }
 
 }
 
-void collectSensorData(){
+
+void collectSensorData()
+{
 	lsm6dsl_get_acc(acc, (acc+1), (acc+2));
 	lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
 
@@ -137,58 +144,73 @@ void collectSensorData(){
 	yaw_speed = -20*compute_yaw_speed(gyro);
 }
 
+
 void setCommandToPutty(char cmd[50])
 {
 	memset(commandToPutty,'\0', sizeof(commandToPutty));
 	strcpy(commandToPutty, cmd);
 }
 
-void checkForFlip(){
+
+void checkForFlip()
+{
 	 int blockingAngle = 5;
 	 int roll_angle = compute_filtered_roll(acc);
 	 int pitch_angle = -compute_filtered_pitch(acc);
-	 //pitch_speed = pitch_angle;
-	 //roll_speed = roll_angle;
 
-	 if(abs(roll_angle) < blockingAngle && abs(pitch_angle) < blockingAngle){
-			 flipLock = 0;
-		 }
-	 if(flipLock==0){
-	 if (abs(roll_angle) > flip_angle_threshold && abs(pitch_angle) < flip_angle_threshold){
-		 //r_flip
-		 if(roll_angle > 0 ){
-			 setCommandToPutty("rFlip");
-		 }
-		 else{
-			 setCommandToPutty("lFlip");
-
-		 }
-		 flipLock=1;
-	 }
-	 if(abs(pitch_angle) > flip_angle_threshold && abs(roll_angle) < flip_angle_threshold){
-		 //p_flip
-		if(pitch_angle > 0 ){
-			setCommandToPutty("fFlip");
-		}
-		else{
-			setCommandToPutty("bFlip");
-		}
-		flipLock =1;
-	 	}
+	 if(abs(roll_angle) < blockingAngle && abs(pitch_angle) < blockingAngle)
+	 {
+		flipLock = 0;
 	 }
 
+	 if(flipLock==0)
+	 {
+		 if (abs(roll_angle) > flip_angle_threshold && abs(pitch_angle) < flip_angle_threshold)
+		 {
+			 //r_flip
+			 if(roll_angle > 0 )
+			 {
+				 setCommandToPutty("rFlip");
+			 }
+			 else
+			 {
+				 setCommandToPutty("lFlip");
+			 }
+			 flipLock=1;
+		 }
+
+		 if(abs(pitch_angle) > flip_angle_threshold && abs(roll_angle) < flip_angle_threshold)
+		 {
+			 //p_flip
+			 if(pitch_angle > 0)
+			 {
+				 setCommandToPutty("fFlip");
+			 }
+			 else
+			 {
+				 setCommandToPutty("bFlip");
+			 }
+			 flipLock =1;
+		 }
+	 }
 }
+
 
 void checkIfTakeOffOrLand()
 {
-	if (vertical_speed<0){
+	if (vertical_speed<0)
+	{
 		setCommandToPutty("LAND");
 	}
-	else if (vertical_speed>0){
+	else if (vertical_speed>0)
+	{
 		setCommandToPutty("TAKEOFF");
 	}
 }
-void resetEachSpeed(){
+
+
+void resetEachSpeed()
+{
 	roll_speed =0;
 	pitch_speed = 0;
 	yaw_speed = 0;
