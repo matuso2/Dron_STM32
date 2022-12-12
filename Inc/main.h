@@ -48,7 +48,7 @@ void Error_Handler(void);
 /*declaration of functions*/
 void SystemClock_Config(void);
 void setCommandToPutty(char cmd[50]);
-void checkIfTakeOffOrLand(int takeoff_land); //>0 = takeoff, <0 = land
+void checkIfTakeOffOrLand(); //>0 = takeoff, <0 = land
 int countUp(int c);
 void checkForFlip();
 void collectSensorData();

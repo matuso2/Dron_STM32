@@ -26,7 +26,7 @@ int max_roll_speed = 50;
 int max_pitch_speed = 50;
 int control_type = 2; //1 linear, 2 quadratic
 int counter = 0;
-int flipSpeedThreshold = 25;
+int flip_angle_threshold = 25;
 int flipLock = 0;
 
 int main()
@@ -126,18 +126,18 @@ void controlDrone(){
 }
 void checkForFlip(){
 	 int blockingAngle = 5;
-	 int r_speed = compute_filtered_roll(acc);
-	 int p_speed = -compute_filtered_pitch(acc);
-	 //pitch_speed = p_speed;
-	 //roll_speed = r_speed;
+	 int roll_angle = compute_filtered_roll(acc);
+	 int pitch_angle = -compute_filtered_pitch(acc);
+	 //pitch_speed = pitch_angle;
+	 //roll_speed = roll_angle;
 
-	 if(abs(r_speed) < blockingAngle && abs(p_speed) < blockingAngle){
+	 if(abs(roll_angle) < blockingAngle && abs(pitch_angle) < blockingAngle){
 			 flipLock = 0;
 		 }
 	 if(flipLock==0){
-	 if (abs(r_speed) > flipSpeedThreshold && abs(p_speed) < flipSpeedThreshold){
+	 if (abs(roll_angle) > flip_angle_threshold && abs(pitch_angle) < flip_angle_threshold){
 		 //r_flip
-		 if(r_speed > 0 ){
+		 if(roll_angle > 0 ){
 			 setCommandToPutty("rFlip");
 		 }
 		 else{
@@ -146,9 +146,9 @@ void checkForFlip(){
 		 }
 		 flipLock=1;
 	 }
-	 if(abs(p_speed) > flipSpeedThreshold && abs(r_speed) < flipSpeedThreshold){
+	 if(abs(pitch_angle) > flip_angle_threshold && abs(roll_angle) < flip_angle_threshold){
 		 //p_flip
-		if(p_speed > 0 ){
+		if(pitch_angle > 0 ){
 			setCommandToPutty("fFlip");
 		}
 		else{
@@ -175,12 +175,12 @@ void setCommandToPutty(char cmd[50])
 	strcpy(commandToPutty, cmd);
 }
 
-void checkIfTakeOffOrLand(int takeoff_land)
+void checkIfTakeOffOrLand()
 {
-	if (takeoff_land<0){
+	if (vertical_speed<0){
 		setCommandToPutty("LAND");
 	}
-	else if (takeoff_land>0){
+	else if (vertical_speed>0){
 		setCommandToPutty("TAKEOFF");
 	}
 }
