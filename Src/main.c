@@ -28,15 +28,8 @@ int control_type = 2; //1 linear, 2 quadratic
 int counter = 0;
 int flipSpeedThreshold = 30;
 int flipLock = 0;
-/*declaration of functions*/
-void SystemClock_Config(void);
-void setCommandToPutty(char cmd[50]);
-void checkIfTakeOffOrLand(int takeoff_land); //>0 = takeoff, <0 = land
-int countUp(int c);
-void checkForFlip();
-void collectSensorData();
-void controlDrone();
-int main(void)
+
+int main()
 {
   LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
@@ -58,25 +51,21 @@ int main(void)
   {
 	  counter = countUp(counter);
 	  memset(formated_text, '\0', sizeof(formated_text));
-
 	  checkControlStateButton();
-	  if(checkIfStateChangedFromRc())
-	  {
+	  if(checkIfStateChangedFromRc()){
 		  speed_reset_delay = 5;
 	  }
-	  if (speed_reset_delay)
-	  {
+	  if (speed_reset_delay){
 		  setCommandToPutty("rc");
-		//  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", 0, 0, 0, 0, commandToPutty, counter);
 		  speed_reset_delay -= 1;
 	  }
 	  controlDrone();
 	  sprintf(formated_text, "\\%d, %d, %d, %d, %s, %d \n\r", roll_speed, pitch_speed, vertical_speed, yaw_speed, commandToPutty, counter);
-
 	  USART2_PutBuffer((uint8_t*)formated_text, strlen(formated_text));
 	  LL_mDelay(10);
   }
 }
+
 int countUp(int c){
 	 int maxCount = 1000;
 	 if(c < maxCount){

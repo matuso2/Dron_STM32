@@ -45,5 +45,13 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
+/*declaration of functions*/
+void SystemClock_Config(void);
+void setCommandToPutty(char cmd[50]);
+void checkIfTakeOffOrLand(int takeoff_land); //>0 = takeoff, <0 = land
+int countUp(int c);
+void checkForFlip();
+void collectSensorData();
+void controlDrone();
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
