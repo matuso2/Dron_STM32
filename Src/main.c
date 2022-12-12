@@ -49,7 +49,7 @@ int main()
 
   while (1)
   {
-	  counter = countUp(counter);
+	  countUp();
 	  memset(formated_text, '\0', sizeof(formated_text));
 	  checkControlStateButton();
 	  if(checkIfStateChangedFromRc()){
@@ -66,16 +66,7 @@ int main()
   }
 }
 
-int countUp(int c){
-	 int maxCount = 1000;
-	 if(c < maxCount){
-		 c++;
-	 }
-	 else{
-		 c = 0;
-	 }
-	 return c;
-}
+
 void controlDrone(){
 	 // BUTTON2 PRESSED
 		  if (BUTTON2_GET_STATE && !speed_reset_delay)
@@ -92,7 +83,7 @@ void controlDrone(){
 			  {
 				  setCommandToPutty("doNothing");
 				  checkForFlip();
-				  checkIfTakeOffOrLand(vertical_speed);
+				  checkIfTakeOffOrLand();
 			  }
 
 			  LED2_ON;
@@ -124,6 +115,34 @@ void controlDrone(){
 			  LED2_OFF;
 		  }
 }
+
+void countUp(){
+	 int maxCount = 1000;
+	 if(counter < maxCount){
+		 counter++;
+	 }
+	 else{
+		 counter = 0;
+	 }
+
+}
+
+void collectSensorData(){
+	lsm6dsl_get_acc(acc, (acc+1), (acc+2));
+	lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
+
+	vertical_speed = 20*compute_vertical_speed(acc);
+	roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
+	pitch_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
+	yaw_speed = -20*compute_yaw_speed(gyro);
+}
+
+void setCommandToPutty(char cmd[50])
+{
+	memset(commandToPutty,'\0', sizeof(commandToPutty));
+	strcpy(commandToPutty, cmd);
+}
+
 void checkForFlip(){
 	 int blockingAngle = 5;
 	 int roll_angle = compute_filtered_roll(acc);
@@ -158,21 +177,6 @@ void checkForFlip(){
 	 	}
 	 }
 
-}
-void collectSensorData(){
-	lsm6dsl_get_acc(acc, (acc+1), (acc+2));
-	lsm6dsl_get_gyro(gyro,(gyro+1), (gyro+2));
-
-	vertical_speed = 20*compute_vertical_speed(acc);
-	roll_speed = compute_roll_speed(acc, max_roll_speed, control_type);
-	pitch_speed = -compute_pitch_speed(acc, max_pitch_speed, control_type);
-	yaw_speed = -20*compute_yaw_speed(gyro);
-}
-
-void setCommandToPutty(char cmd[50])
-{
-	memset(commandToPutty,'\0', sizeof(commandToPutty));
-	strcpy(commandToPutty, cmd);
 }
 
 void checkIfTakeOffOrLand()

@@ -49,7 +49,7 @@ void Error_Handler(void);
 void SystemClock_Config(void);
 void setCommandToPutty(char cmd[50]);
 void checkIfTakeOffOrLand(); //>0 = takeoff, <0 = land
-int countUp(int c);
+void countUp();
 void checkForFlip();
 void collectSensorData();
 void controlDrone();
