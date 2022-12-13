@@ -18,11 +18,12 @@ Pomocou jedného tlačidla je možné prepínať medzi dvoma módmi:
 V oboch módoch je možné riadiť drona len pri stlačenom tlačidle2 (signalizácia stlačenia pomocou zasvietenej zelenej ledky)
 
 Opis riadenia drona:
-1. mód - riadenie pohybu drona - "RC mód"
-V tomto móde svieti ledka1
+
+1. mód - "RC mód"
+V tomto móde svieti oranžová ledka
 Naklonením dosky okolo osi x a y sa riadi rýchlosť v smere osi x a y. Myknutím dosky do strany (v osi y) sa dron otáča okolo
 osi z, myknutím dosky v osi z sa nastavuje výška drona.
 
-2.- mód
+2. mód - "Príkazový mód"
 Myknutím dosky hore (v osi z) dron vzlietne, smerom dole dron pristane.
 Naklonením dosky okolo osí x a y o predom stanovený hraničný uhol dron vykoná flip v danom smere.
