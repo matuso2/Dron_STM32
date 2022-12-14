@@ -7,7 +7,7 @@ Tím:
 - Matúš Jankech
 
 Opis:
-Cieľom projektu je ovládať drona RYZE Tello pomocou akcelerometra/gyroskopu umiestnených na senyorovej doske IKS01A2.
+Cieľom projektu je ovládať drona RYZE Tello pomocou akcelerometra/gyroskopu umiestnených na senzorovej doske IKS01A2.
  
 Špecifikácia:
 Pomocou jedného tlačidla je možné prepínať medzi dvoma módmi:
